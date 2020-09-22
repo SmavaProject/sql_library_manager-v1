@@ -27,17 +27,39 @@ router.get('/new', asyncHandler(async (req, res) => {
 }));
 
 /*POST - create a new book*/
-router.post('/new', asyncHandler((req, res, next) => { // / rounte??
-    Book.create().then(function (book) {
-        res.redirect('/books/' + book.id); //+ book.id
+router.post('/new', asyncHandler(async (req, res, next) => { // / rounte??
+    Book.create(req.body).then(function (book) { //missed the body of the book!!!
+        res.redirect('/books/' + book.id);
     });
 }));
 
 /* GET books by id*/
-router.get('/:id', asyncHandler((req, res, next) => {
-    Book.findById(req.param.id).then(function(book){
-        res.render('update-book', {book: book, title: book.title});
-    })
+router.get('/:id', asyncHandler(async (req, res, next) => {
+    Book.findByPk(req.params.id).then(book => {
+        res.render('update-book', {book, title: book.title, author: book.author, genre: book.genre, year: book.year});
+    });
+}));
+
+/*POST - updates a given book*/
+router.post('/:id', asyncHandler(async(req, res, next) => {
+    console.log('req.params.id ' + req.params.id);
+    const book = await Book.findByPk(req.params.id);
+    console.log('req.body ' + req.body);
+    await book.update(req.body);
+    req.redirect('/books/' + book.id);
+}));
+
+/*POST - deletes the book*/
+router.get('/:id/delete', asyncHandler(async(req, res, next) => {
+    const book = await Book.findByPk(req.params.id);
+    req.redirect('/books/' + book.id);
+}));
+
+/*POST - deletes the book*/
+router.post('/:id/delete', asyncHandler(async(req, res, next) => {
+    const book = await Book.findByPk(req.params.id);
+    await book.destroy();
+    req.redirect('/');
 }));
 
 module.exports = router;
