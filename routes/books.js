@@ -29,6 +29,7 @@ router.get('/new', asyncHandler(async (req, res) => {
 /*POST - create a new book*/
 router.post('/new', asyncHandler(async (req, res, next) => {
     let book;
+    let {title, author, genre, year} = req.body //extract fields from form
     try{
         book = await Book.create(req.body);
         if (book){
@@ -38,7 +39,7 @@ router.post('/new', asyncHandler(async (req, res, next) => {
         console.log(error);
         if (error.name === "SequelizeValidationError") { // checking the error
             book = await Book.build(req.body);
-            res.render("new-book", {book, errors: error.errors})
+            res.render("new-book", {book, errors: error.errors, title, author, genre, year}) //display fields
         } else {
             next(err);
         }
