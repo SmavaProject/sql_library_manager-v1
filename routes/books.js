@@ -35,31 +35,41 @@ router.post('/new', asyncHandler(async (req, res, next) => { // / rounte??
 
 /* GET books by id*/
 router.get('/:id', asyncHandler(async (req, res, next) => {
-    Book.findByPk(req.params.id).then(book => {
+    const book = await Book.findByPk(req.params.id);
+    if (book){
         res.render('update-book', {book, title: book.title, author: book.author, genre: book.genre, year: book.year});
-    });
+    }else{
+        const error = new Error('Page not found');
+        error.status = 404;
+        next(error);
+    }
 }));
 
 /*POST - updates a given book*/
 router.post('/:id', asyncHandler(async(req, res, next) => {
-    console.log('req.params.id ' + req.params.id);
-    const book = await Book.findByPk(req.params.id);
-    console.log('req.body ' + req.body);
-    await book.update(req.body);
-    req.redirect('/books/' + book.id);
-}));
+    let book;
+    try {
+        book = await Book.findByPk(req.params.id);
+        if (book) {
+            await book.update(req.body);
+            res.redirect('/books');
+        } else {
+            const error = new Error('Book not found');
+            error.status = 404;
+            next(error);
+        }
+    } catch (err) {
+        console.log("error " + err);
+        throw err;
+    }
 
-/*POST - deletes the book*/
-router.get('/:id/delete', asyncHandler(async(req, res, next) => {
-    const book = await Book.findByPk(req.params.id);
-    req.redirect('/books/' + book.id);
 }));
 
 /*POST - deletes the book*/
 router.post('/:id/delete', asyncHandler(async(req, res, next) => {
     const book = await Book.findByPk(req.params.id);
     await book.destroy();
-    req.redirect('/');
+    res.redirect('/books');
 }));
 
 module.exports = router;
