@@ -1,4 +1,6 @@
 'use strict';
+const Sequelize = require("sequelize");
+
 const {
   Model
 } = require('sequelize');
@@ -14,8 +16,22 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Book.init({
-    title: DataTypes.STRING,
-    author: DataTypes.STRING,
+    title: {
+      type: Sequelize.STRING,
+      validate: {
+        notEmpty: {
+          msg: '"Title" is required'
+        }
+      }
+    },
+    author: {
+      type: Sequelize.STRING,
+      validate: {
+        notEmpty: {
+          msg: '"Author" is required'
+        }
+      }
+    },
     genre: DataTypes.STRING,
     year: DataTypes.INTEGER
   }, {
