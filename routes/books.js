@@ -8,7 +8,7 @@ function asyncHandler(cb){
         try {
             await cb(req, res, next)
         } catch(error){
-            res.status(500).send(error);
+            next(error);
         }
     }
 }
@@ -29,7 +29,6 @@ router.get('/new', asyncHandler(async (req, res) => {
 /*POST - create a new book*/
 router.post('/new', asyncHandler(async (req, res, next) => {
     let book;
-    let {title, author, genre, year} = req.body //extract fields from form
     try{
         book = await Book.create(req.body);
         if (book){
@@ -39,7 +38,7 @@ router.post('/new', asyncHandler(async (req, res, next) => {
         console.log(error);
         if (error.name === "SequelizeValidationError") { // checking the error
             book = await Book.build(req.body);
-            res.render("new-book", {book, errors: error.errors, title, author, genre, year}) //display fields
+            res.render("new-book", {book, error})
         } else {
             next(err);
         }
@@ -73,7 +72,11 @@ router.post('/:id', asyncHandler(async(req, res, next) => {
         }
     } catch (err) {
         console.log("error " + err);
-        next(err);
+        if (err.name === "SequelizeValidationError") {
+            res.render('update-book', {book, title: book.title, author: book.author, genre: book.genre, year: book.year, err});
+        } else {
+            next(err);
+        }
     }
 
 }));
